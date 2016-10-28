@@ -2,39 +2,22 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Theft occurred yearwise and amountwise </title>
-   <h1 align="center">Theft occurred yearwise and amountwise </h1>
-  <style>
-  body{
-    background-color: #ddd;
-  }
-  .bar1 {
-  fill:green;
-}
-.legend {
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        font-size: 80%;
-    }
-.axis {
-  font: 10px sans-serif;
-  font-size: 12px;
-}
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-}
-  </style>
+  <title>Chicago Crime Data</title>
+  <link href='http://fonts.googleapis.com/css?family=Poiret+One' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="css/theft_css.css">
 </head>
-<body >
+<body>
+  <h1 align="center">Chicago Crime Data</h1>
+  <h3>Crime Over and Under $500 from 2001-2016</h3>
   <br>
-  <script src="https://d3js.org/d3.v3.min.js" charset="utf-8">
-  </script>
+  <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
   <script>
-  
+
+  var yAxisLabelText = "Theft Over & Under $500"; // Axis Labels
+      var xAxisLabelText = "Years";               // Axis Labels
   var margin={top:20, bottom:165, left:150, right:50},
-    width=1000-margin.left-margin.right,
-    height=600-margin.top-margin.bottom;
+    width=900-margin.left-margin.right,
+    height=500-margin.top-margin.bottom;
   var horizontal=d3.scale.ordinal().rangeRoundBands([0,width],0.25),
     vertical=d3.scale.linear().rangeRound([height,0]);
   var color = d3.scale.category10();
@@ -44,24 +27,22 @@
   var yAxis=d3.svg.axis()
     .scale(vertical)
     .orient("left");
-    
-  var svg=d3.select("body").append("svg")
+   var svg=d3.select("body").append("svg")
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
   .append("g")
   .attr("transform",
         "translate(" + margin.left + "," + margin.top + ")");
-  d3.json("file/theft.json",function(err,data){
+  d3.json("../json/theft.json",function(err,data){  // Reading JSON file
   data.forEach(function(d){
-    d["year"]=d["year"];
+    d["Year"]=d["Year"];
     d["OVER $500"]=d["OVER $500"];
     d["$500 AND UNDER"]=d["$500 AND UNDER"];
-   
   });
-  var xData=["$500 AND UNDER","OVER $500"];
+  var xData=["OVER $500","$500 AND UNDER"];
   var dataIntermediate = xData.map(function (c) {
         return data.map(function (d) {
-            return {x: d["year"], y: d[c]};
+            return {x: d["Year"], y: d[c]};
         });
     });
   var dataStackLayout = d3.layout.stack()(dataIntermediate);
@@ -94,34 +75,41 @@
           .attr("height", function (d) {
               return vertical(d.y0) - vertical(d.y + d.y0);
         })
-      .attr("width", horizontal.rangeBand());
+      .attr("width", horizontal.rangeBand())
+      .on("mouseover", function() { tooltip.style("display", null); })
+      .on("mouseout", function() { tooltip.style("display", "none"); })
+      .on("mousemove", function(d) {
+        var xPosition = d3.mouse(this)[0] - 15;
+        var yPosition = d3.mouse(this)[1] - 25;
+        tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
+        tooltip.select("text").text(d.y);
+  });
   svg.append("g")
       .attr("class", "axis")
       .attr("transform", "translate(0," + (height)+ ")")
       .call(xAxis)
-      .selectAll("text")
-       .attr("y", 0)
-      .attr("x", 9)
-      .attr("transform", "rotate(65)")
-      .style("text-anchor", "start");
-         
+      .append("text")
+       .attr("transform", "rotate(-360)")
+       .style("text-anchor", "middle")
+       .attr("y", 60)
+       .attr("x", width/2)
+       .style("font-size","20px")
+       .text(xAxisLabelText);
   svg.append("g")
     .attr("class", "axis")
     .call(yAxis)
     .append("text")
        .attr("transform", "rotate(-90)")
-       .attr("dy","1em")
-       .style("text-anchor", "end")
-       .style("font-size","15px")
-       .style("font-weight","bold")
-       .style("color","red")
-       .text("amount");
+       .style("text-anchor", "middle")
+       .attr("y", -100)
+       .attr("x", -150)
+       .style("font-size","20px")
+       .text(yAxisLabelText);
        var legend = svg.selectAll(".legend")
          .data(color.domain().slice())
        .enter().append("g")
          .attr("class", "legend")
-         .attr("transform", function(d, i) { return "translate(0," + i * 20 +
-  ")"; });
+         .attr("transform", function(d, i) { return "translate(0," + i * 40 + ")"; });
      legend.append("rect")
          .attr("x", width - 18)
          .attr("width", 18)
@@ -132,9 +120,27 @@
          .attr("y", 9)
          .attr("dy", ".35em")
          .style("text-anchor", "end")
-         .style("fill","green")
+         .style("fill","Black")
          .style("font-size","15px")
+         .style("font-weight","bold")
          .text(function(d,i) { return xData[i]; });
+
+      var tooltip = svg.append("g")   // Adding tooltip
+        .attr("class", "tooltip")
+        .style("display", "none");
+
+      tooltip.append("rect")
+        .attr("width", 30)
+        .attr("height", 20)
+        .attr("fill", "white")
+        .style("opacity", 0.5);
+
+      tooltip.append("text")
+        .attr("x", 15)
+        .attr("dy", "1.2em")
+        .style("text-anchor", "middle")
+        .attr("font-size", "12px")
+        .attr("font-weight", "bold");
   });
 </script>
 <br>

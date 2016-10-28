@@ -1,6 +1,6 @@
 var fs=require('fs');
 var rd = require('readline').createInterface({
-input: fs.createReadStream('file/Crimes_-_2001_to_present.csv')});
+input: fs.createReadStream('../csv/Crimes_-_2001_to_present.csv')});
 var data=[];
 var obj={};
 var head =[];
@@ -30,7 +30,8 @@ rd.on('line', function (line)
 
 rd.on('close', function()
 {
-           fs.writeFileSync('file/try.json',JSON.stringify(arr),'utf8',function(err){console.log(err);});
+           fs.writeFileSync('../json/dataVisualization.json',JSON.stringify(arr),'utf8',function(err){console.log(err);});
+           console.log("done");
 	  
 });
   
